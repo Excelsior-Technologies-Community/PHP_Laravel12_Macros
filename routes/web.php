@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\MacroController;
 
 /*
 |--------------------------------------------------------------------------
@@ -133,3 +134,30 @@ Route::get('/shop-filter', function (Request $request) {
         'filters' => $request->all()
     ]);
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Additional Macro Features
+|--------------------------------------------------------------------------
+*/
+
+// Product Analytics & Statistics Dashboard
+Route::get('/product-analytics', [
+    MacroController::class,
+    'productAnalytics'
+]);
+
+
+// Product Sorting & Comparison Dashboard
+Route::get('/product-comparison', [
+    MacroController::class,
+    'productComparison'
+]);
+
+
+// Smart Product Recommendation Dashboard
+Route::get('/product-recommendations', [
+    MacroController::class,
+    'productRecommendations'
+]);
