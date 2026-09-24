@@ -703,4 +703,168 @@ class MacroController extends Controller
 
         return $products->values();
     }
+
+    /**
+     * Custom Collection Macro Builder Studio Dashboard.
+     */
+    public function macroBuilder(Request $request)
+    {
+        $products = $this->products();
+        $samplePrices = collect([150, 300, 450, 600, 900, 1200, 1500, 2500, 3000, 5000]);
+        $sampleTitles = collect([
+            'Summer Collection Cotton T-Shirt 2026',
+            'Premium Denim Winter Jeans',
+            'Luxury Smart Watch with Fitness Tracker',
+        ]);
+
+        // Demonstrate 1: stats() macro
+        $statsResult = $samplePrices->stats();
+
+        // Demonstrate 2: toPercentiles() macro
+        $percentilesResult = $samplePrices->toPercentiles();
+
+        // Demonstrate 3: slugify() macro
+        $slugsResult = $sampleTitles->slugify();
+
+        // Demonstrate 4: groupByMulti() macro
+        $groupedResult = $products->groupByMulti(['category', 'rating']);
+
+        return view('macro-builder', compact(
+            'samplePrices',
+            'sampleTitles',
+            'statsResult',
+            'percentilesResult',
+            'slugsResult',
+            'groupedResult'
+        ));
+    }
+
+    /**
+     * Test Custom Macro Sandbox Execution.
+     */
+    public function testCustomMacro(Request $request)
+    {
+        $macroName = $request->input('macro', 'stats');
+        $rawInput = trim((string) $request->input('input', '10, 25, 45, 60, 85, 100'));
+
+        $items = collect(explode(',', $rawInput))
+            ->map(fn($v) => is_numeric(trim($v)) ? (float) trim($v) : trim($v))
+            ->values();
+
+        $output = null;
+
+        switch ($macroName) {
+            case 'stats':
+                $output = $items->stats();
+                break;
+
+            case 'toPercentiles':
+                $output = $items->toPercentiles();
+                break;
+
+            case 'slugify':
+                $output = $items->slugify();
+                break;
+
+            default:
+                $output = ['error' => 'Unknown macro specified.'];
+                break;
+        }
+
+        return redirect()->route('macro.builder')
+            ->with('sandbox_result', [
+                'macro' => $macroName,
+                'input' => $rawInput,
+                'output' => json_encode($output, JSON_PRETTY_PRINT),
+            ]);
+    }
+
+    /**
+     * Collection Performance Benchmarking & Memory Analytics View.
+     */
+    public function benchmark()
+    {
+        return view('macro-benchmark');
+    }
+
+    /**
+     * Collection Benchmark JSON API.
+     */
+    public function benchmarkJson(Request $request)
+    {
+        $sizes = [1000, 5000, 10000, 25000];
+        $benchmarkResults = [];
+
+        foreach ($sizes as $size) {
+            // Generate dummy items
+            $dummyItems = collect(range(1, $size))->map(function ($i) {
+                return [
+                    'id' => $i,
+                    'name' => 'Product Item ' . $i,
+                    'price' => rand(100, 5000),
+                    'rating' => rand(1, 5),
+                    'category' => ['Clothing', 'Footwear', 'Accessories'][rand(0, 2)],
+                ];
+            });
+
+            // Benchmark 1: Standard filter + map
+            $memBefore = memory_get_usage();
+            $t1 = microtime(true);
+            $res1 = $dummyItems->filter(fn($p) => $p['price'] > 2000)->map(fn($p) => $p['name']);
+            $time1 = round((microtime(true) - $t1) * 1000, 2);
+            $mem1 = round((memory_get_usage() - $memBefore) / 1024, 2);
+
+            // Benchmark 2: Spatie prioritize macro
+            $memBefore = memory_get_usage();
+            $t2 = microtime(true);
+            $res2 = $dummyItems->prioritize(fn($p) => $p['rating'] === 5);
+            $time2 = round((microtime(true) - $t2) * 1000, 2);
+            $mem2 = round((memory_get_usage() - $memBefore) / 1024, 2);
+
+            // Benchmark 3: Custom fuzzySearch macro
+            $memBefore = memory_get_usage();
+            $t3 = microtime(true);
+            $res3 = $dummyItems->take(500)->fuzzySearch('Item', 'name', 50);
+            $time3 = round((microtime(true) - $t3) * 1000, 2);
+            $mem3 = round((memory_get_usage() - $memBefore) / 1024, 2);
+
+            $benchmarkResults[] = [
+                'size' => number_format($size) . ' Items',
+                'filter_map_time_ms' => $time1,
+                'filter_map_mem_kb' => max(0, $mem1),
+                'spatie_prioritize_time_ms' => $time2,
+                'spatie_prioritize_mem_kb' => max(0, $mem2),
+                'fuzzy_search_time_ms' => $time3,
+                'fuzzy_search_mem_kb' => max(0, $mem3),
+            ];
+        }
+
+        return response()->json([
+            'timestamp' => now()->format('H:i:s'),
+            'results' => $benchmarkResults,
+        ]);
+    }
+
+    /**
+     * Intelligent Collection Fuzzy Search Studio View.
+     */
+    public function fuzzySearch(Request $request)
+    {
+        $products = $this->products();
+        $query = trim((string) $request->get('query', 'shrt'));
+
+        $searchResults = $products
+            ->fuzzySearch($query, 'name', 20)
+            ->highlightMatches($query, 'name');
+
+        $sampleQueries = ['shrt', 'jenes', 'soes', 'wtch', 'hood', 'glass'];
+
+        return view('macro-fuzzy', compact(
+            'products',
+            'query',
+            'searchResults',
+            'sampleQueries'
+        ));
+    }
 }
+
