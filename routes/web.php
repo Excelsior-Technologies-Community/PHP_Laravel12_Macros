@@ -257,3 +257,50 @@ Route::get(
     '/product-recommendations',
     [MacroController::class, 'productRecommendations']
 )->name('product.recommendations');
+
+
+/*
+|--------------------------------------------------------------------------
+| Custom Collection Macro Builder Studio
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/macro-builder',
+    [MacroController::class, 'macroBuilder']
+)->name('macro.builder');
+
+Route::post(
+    '/macro-builder/test',
+    [MacroController::class, 'testCustomMacro']
+)->name('macro.builder.test');
+
+
+/*
+|--------------------------------------------------------------------------
+| Collection Performance Benchmarking & Memory Analytics
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/macro-benchmark',
+    [MacroController::class, 'benchmark']
+)->name('macro.benchmark');
+
+Route::get(
+    '/macro-benchmark-json',
+    [MacroController::class, 'benchmarkJson']
+)->name('macro.benchmark.json');
+
+
+/*
+|--------------------------------------------------------------------------
+| Intelligent Collection Fuzzy Search Studio
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/macro-fuzzy',
+    [MacroController::class, 'fuzzySearch']
+)->name('macro.fuzzy');
+
